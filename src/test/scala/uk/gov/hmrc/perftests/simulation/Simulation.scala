@@ -19,7 +19,24 @@ package uk.gov.hmrc.perftests.simulation
 import uk.gov.hmrc.performance.simulation.PerformanceTestRunner
 import uk.gov.hmrc.perftests.requests.ReportingRequests._
 import uk.gov.hmrc.perftests.requests._
+
+import java.nio.file.{Files, Paths}
+
 class Simulation extends PerformanceTestRunner {
+
+  private val mediumFileSize: String = "150mb"
+  private val largeFileSize: String  = "249mb"
+
+  private val mediumFilePath: String = s"target/scala-2.13/test-classes/data/accepted-carf-$mediumFileSize.xml"
+  private val largeFilePath: String  = s"target/scala-2.13/test-classes/data/accepted-carf-$largeFileSize.xml"
+
+  XmlGenerator.generateXmlFile(mediumFilePath, mediumFileSize)
+  XmlGenerator.generateXmlFile(largeFilePath, largeFileSize)
+
+  after {
+    Files.deleteIfExists(Paths.get(mediumFilePath))
+    Files.deleteIfExists(Paths.get(largeFilePath))
+  }
 
   setup("SmallFile", "Small file upload").withChainedActions(
     getAuthLoginPage,
@@ -44,7 +61,7 @@ class Simulation extends PerformanceTestRunner {
     getAuthLoginPage,
     postAuthLoginPage,
     getUploadFilePage,
-    postUploadFilePage("accepted-nil-report.xml"), // TODO: 150mb file not accepted in local, 250mb not accepted in local & staging, large file not accepted in git
+    postUploadFilePage(s"accepted-carf-$mediumFileSize.xml"),
     getUploadIdStatusUrl,
     pollUntilValidated,
     getValidateFileUrl,
@@ -63,7 +80,7 @@ class Simulation extends PerformanceTestRunner {
     getAuthLoginPage,
     postAuthLoginPage,
     getUploadFilePage,
-    postUploadFilePage("accepted-nil-report.xml"), // TODO: 150mb file not accepted in local, 250mb not accepted in local & staging, large file not accepted in git
+    postUploadFilePage(s"accepted-carf-$largeFileSize.xml"),
     getUploadIdStatusUrl,
     pollUntilValidated,
     getValidateFileUrl,

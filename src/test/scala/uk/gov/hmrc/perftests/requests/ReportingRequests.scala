@@ -33,8 +33,7 @@ object ReportingRequests extends ServicesConfiguration {
   val baseUrl: String     = baseUrlFor("carf-reporting-frontend")
   val route: String       = "/send-a-cryptoasset-report"
   val baseUrlAuth: String = baseUrlFor("auth-frontend")
-  val amazonUrlPattern    = """action="(.*?)""""
-  val refreshes: Int      = 5
+  val targetUrlPattern    = """action="(.*?)""""
   val upScanTimer: Int    = 25
 
   def inputSelectorByName(name: String): Expression[String] = s"input[name='$name']"
@@ -72,7 +71,7 @@ object ReportingRequests extends ServicesConfiguration {
 
   def postUploadFilePage(fileName: String): HttpRequestBuilder =
     http("Post Upload file page")
-      .post("#{fileUploadAmazonUrl}")
+      .post("#{upscanTargetUrl}")
       .asMultipartForm
       .form("#{CarfUploadForm}")
       .bodyPart(RawFileBodyPart("file", s"data/$fileName"))
@@ -165,6 +164,6 @@ object ReportingRequests extends ServicesConfiguration {
       .check(status.is(200))
 
   def saveFileUploadUrl: CheckBuilder[RegexCheckType, String] =
-    regex(_ => amazonUrlPattern).saveAs("fileUploadAmazonUrl")
+    regex(_ => targetUrlPattern).saveAs("upscanTargetUrl")
 
 }
