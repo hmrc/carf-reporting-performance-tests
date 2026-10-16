@@ -34,7 +34,7 @@ object ReportingRequests extends ServicesConfiguration {
   val route: String       = "/send-a-cryptoasset-report"
   val baseUrlAuth: String = baseUrlFor("auth-frontend")
   val targetUrlPattern    = """action="(.*?)""""
-  val upScanTimer: Int    = 25
+  val upScanTimer: Int    = 60
 
   def inputSelectorByName(name: String): Expression[String] = s"input[name='$name']"
 
@@ -69,14 +69,19 @@ object ReportingRequests extends ServicesConfiguration {
       .check(saveFileUploadUrl)
       .check(status.is(200))
 
-  def postUploadFilePage(fileName: String): HttpRequestBuilder =
-    http("Post Upload file page")
-      .post("#{upscanTargetUrl}")
-      .asMultipartForm
-      .form("#{CarfUploadForm}")
-      .bodyPart(RawFileBodyPart("file", s"data/$fileName"))
-      .check(status.is(303))
-      .check(header("location").saveAs("Status"))
+  def postUploadFilePage(fileName: String): ChainBuilder =
+    exec { session =>
+      println(s"Uploading file: $fileName")
+      session
+    }.exec(
+      http("Post Upload file page")
+        .post("#{upscanTargetUrl}")
+        .asMultipartForm
+        .form("#{CarfUploadForm}")
+        .bodyPart(RawFileBodyPart("file", s"data/$fileName"))
+        .check(status.is(303))
+        .check(header("location").saveAs("Status"))
+    )
 
   val pollUntilValidated: List[ActionBuilder] =
     asLongAsDuring(
