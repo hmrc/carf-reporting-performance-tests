@@ -34,7 +34,7 @@ object ReportingRequests extends ServicesConfiguration {
   val route: String       = "/send-a-cryptoasset-report"
   val baseUrlAuth: String = baseUrlFor("auth-frontend")
   val targetUrlPattern    = """action="(.*?)""""
-  val upScanTimer: Int    = 25
+  val upScanTimer: Int    = 60
 
   def inputSelectorByName(name: String): Expression[String] = s"input[name='$name']"
 
