@@ -1,8 +1,6 @@
-**This is a template README.md.  Be sure to update this with project specific content that describes your performance test project.**
-
 # carf-reporting-performance-tests
 
-Performance test suite for the `<digital service name>`, using [performance-test-runner](https://github.com/hmrc/performance-test-runner) under the hood.
+Performance test suite for `CARF Reporting`, using [performance-test-runner](https://github.com/hmrc/performance-test-runner) under the hood.
 
 ## Pre-requisites
 
