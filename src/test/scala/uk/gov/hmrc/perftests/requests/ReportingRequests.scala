@@ -1,5 +1,5 @@
 /*
- * Copyright 2023 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,9 +33,8 @@ object ReportingRequests extends ServicesConfiguration {
   val baseUrl: String     = baseUrlFor("carf-reporting-frontend")
   val route: String       = "/send-a-cryptoasset-report"
   val baseUrlAuth: String = baseUrlFor("auth-frontend")
-  val amazonUrlPattern    = """action="(.*?)""""
-  val refreshes: Int      = 5
-  val upScanTimer: Int    = 25
+  val targetUrlPattern    = """action="(.*?)""""
+  val upScanTimer: Int    = 60
 
   def inputSelectorByName(name: String): Expression[String] = s"input[name='$name']"
 
@@ -70,14 +69,19 @@ object ReportingRequests extends ServicesConfiguration {
       .check(saveFileUploadUrl)
       .check(status.is(200))
 
-  def postUploadFilePage(fileName: String): HttpRequestBuilder =
-    http("Post Upload file page")
-      .post("#{fileUploadAmazonUrl}")
-      .asMultipartForm
-      .form("#{CarfUploadForm}")
-      .bodyPart(RawFileBodyPart("file", s"data/$fileName"))
-      .check(status.is(303))
-      .check(header("location").saveAs("Status"))
+  def postUploadFilePage(fileName: String): ChainBuilder =
+    exec { session =>
+      println(s"Uploading file: $fileName")
+      session
+    }.exec(
+      http("Post Upload file page")
+        .post("#{upscanTargetUrl}")
+        .asMultipartForm
+        .form("#{CarfUploadForm}")
+        .bodyPart(RawFileBodyPart("file", s"data/$fileName"))
+        .check(status.is(303))
+        .check(header("location").saveAs("Status"))
+    )
 
   val pollUntilValidated: List[ActionBuilder] =
     asLongAsDuring(
@@ -165,6 +169,6 @@ object ReportingRequests extends ServicesConfiguration {
       .check(status.is(200))
 
   def saveFileUploadUrl: CheckBuilder[RegexCheckType, String] =
-    regex(_ => amazonUrlPattern).saveAs("fileUploadAmazonUrl")
+    regex(_ => targetUrlPattern).saveAs("upscanTargetUrl")
 
 }
